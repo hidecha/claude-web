@@ -8,8 +8,13 @@ A web app (Node.js / Express) that runs your locally installed **Claude Code** f
 - Responses are **rendered as Markdown** (headings, lists, code blocks, tables, etc.; sanitized with marked + DOMPurify)
 - **Copy to clipboard** and **download as a file** buttons (shown as icons) on each response
 - **Keeps the chat as a Claude Code session** (starts with `--session-id`, then uses `--resume`), so the conversation remembers earlier messages
+- **Persistent session history**: past conversations are saved on the server and can be reopened and resumed from the sidebar (survives restarts)
+- **Settings screen** to change the model and AWS credentials (Access Key ID / Secret Access Key / default region) at runtime
+- **Simple shared-password login** gates access; the UI uses the **Noto Sans JP** font for Japanese text
+- Tuned for **Kubernetes cluster investigation** (read-only `kubectl get/describe/logs` are pre-approved and the system prompt steers Claude toward diagnosis)
 - **Pre-define what can be run**: configure allowed tools (`--allowedTools`) and preset prompts in `config.js`
 - Shows **Approve / Reject buttons** on every tool execution and only runs approved ones (a PreToolUse hook waits for the browser's decision)
+- Writes **debug logs** to stdout and `data/debug.log`
 
 ## Requirements
 
@@ -28,10 +33,29 @@ You can change the behavior with environment variables:
 
 | Variable       | Description                              | Default        |
 | -------------- | ---------------------------------------- | -------------- |
-| `PORT`         | Listening port                           | `3000`         |
-| `CLAUDE_BIN`   | Path to the claude executable            | `claude`       |
-| `CLAUDE_CWD`   | Working directory Claude Code runs in    | current dir    |
-| `CLAUDE_MODEL` | Model to use (`opus`/`sonnet`/`haiku`)   | CLI default    |
+| `PORT`           | Listening port                                  | `3000`         |
+| `CLAUDE_BIN`     | Path to the claude executable                   | `claude`       |
+| `CLAUDE_CWD`     | Working directory Claude Code runs in           | current dir    |
+| `CLAUDE_MODEL`   | Default model (`opus`/`sonnet`/`haiku`)         | CLI default    |
+| `AUTH_PASSWORD`  | Shared password for the login screen            | `claude-web`   |
+| `DEBUG_LOG`      | Set to `0` to disable debug logging             | enabled        |
+
+> **Change the default `AUTH_PASSWORD`** before exposing the app to anyone else.
+
+### Settings, sessions, and logs
+
+Runtime settings (model + AWS credentials/region) and full session transcripts are stored
+under `data/` (git-ignored):
+
+- `data/settings.json` — values edited from the **⚙ 設定 / Settings** screen. The model is
+  passed to `claude` via `--model`; AWS values are injected into the child process as
+  `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_DEFAULT_REGION`/`AWS_REGION`.
+- `data/sessions/<uuid>.json` — one transcript per chat, listed in the sidebar for reopening
+  and resuming.
+- `data/debug.log` — timestamped debug log (also printed to stdout).
+
+> `data/` holds the AWS secret access key in plaintext and full transcripts. Keep it off
+> shared volumes and out of version control (it is already in `.gitignore`).
 
 ## Configuring predefined commands
 
@@ -101,7 +125,7 @@ rsync -av --exclude node_modules --exclude .git \
   ./claude-web/ user@linux-host:/opt/claude-web/
 
 # …or clone it from git
-git clone <repo> /opt/claude-web
+git clone https://github.com/hidecha/claude-web.git /opt/claude-web
 ```
 
 ### 3. Install dependencies and verify

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code Chat — Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#1e1e1e; --panel:#252526; --border:#333; --accent:#d97757; }
+    * { box-sizing: border-box; }
+    body { margin:0; height:100vh; display:flex; align-items:center; justify-content:center;
+           font-family:"Noto Sans JP",-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:#eee; }
+    .card { background:var(--panel); border:1px solid var(--border); border-radius:12px;
+            padding:32px; width:320px; }
+    h1 { font-size:18px; margin:0 0 4px; }
+    p { font-size:13px; color:#999; margin:0 0 20px; }
+    label { display:block; font-size:13px; margin-bottom:6px; color:#ccc; }
+    input { width:100%; background:#1a1a1a; color:#eee; border:1px solid var(--border);
+            border-radius:8px; padding:10px; font-size:14px; font-family:inherit; }
+    button { width:100%; margin-top:16px; background:var(--accent); color:#fff; border:none;
+             border-radius:8px; padding:10px; font-size:14px; font-weight:600; cursor:pointer; }
+    .err { color:#e57373; font-size:13px; margin-top:12px; min-height:18px; }
+  </style>
+</head>
+<body>
+  <form class="card" id="form">
+    <h1>Claude Code Chat</h1>
+    <p>サインインしてください / Please sign in</p>
+    <label for="pw">パスワード / Password</label>
+    <input id="pw" type="password" autocomplete="current-password" autofocus />
+    <button type="submit">ログイン / Sign in</button>
+    <div class="err" id="err"></div>
+  </form>
+  <script>
+    const form = document.getElementById("form");
+    const pw = document.getElementById("pw");
+    const err = document.getElementById("err");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      err.textContent = "";
+      const r = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw.value }),
+      });
+      if (r.ok) {
+        location.href = "/";
+      } else {
+        err.textContent = "パスワードが正しくありません / Invalid password";
+        pw.select();
+      }
+    });
+  </script>
+</body>
+</html>
