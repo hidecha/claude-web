@@ -160,6 +160,55 @@ function isValidSessionId(id) {
 }
 
 // --------------------------------------------------------------------------
+// Permission rule matching (mirrors Claude Code's allowedTools/disallowedTools
+// syntax) so that pre-approved tools skip the Approve/Reject dialog.
+//   "Read"               → matches the Read tool with any input
+//   "Bash(git status)"   → matches Bash only when the command is exactly that
+//   "Bash(kubectl get:*)"→ matches Bash when the command starts with "kubectl get"
+// --------------------------------------------------------------------------
+function matchesRule(rule, toolName, toolInput) {
+  const paren = rule.indexOf("(");
+  // Bare tool name (no parentheses): match the tool, ignore input.
+  if (paren === -1) return rule === toolName;
+
+  const ruleTool = rule.slice(0, paren);
+  if (ruleTool !== toolName) return false;
+
+  // Extract the content pattern between the parentheses.
+  const inner = rule.slice(paren + 1, rule.lastIndexOf(")"));
+
+  // The matched value: for Bash it's the command, otherwise a best-effort string.
+  const value =
+    toolName === "Bash"
+      ? (toolInput?.command ?? "")
+      : (typeof toolInput === "string" ? toolInput : JSON.stringify(toolInput ?? ""));
+
+  // "prefix:*" or "prefix*" → prefix match; otherwise exact match.
+  if (inner.endsWith(":*")) {
+    const prefix = inner.slice(0, -2).trim();
+    return value === prefix || value.startsWith(prefix);
+  }
+  if (inner.endsWith("*")) {
+    return value.startsWith(inner.slice(0, -1));
+  }
+  return value.trim() === inner.trim();
+}
+
+// Decide a tool automatically from config, or null if the user must be asked.
+//   "deny"  → matches a disallowedTools rule (takes precedence)
+//   "allow" → matches an allowedTools rule
+//   null    → no rule matched; fall back to the Approve/Reject dialog
+function autoDecision(toolName, toolInput) {
+  for (const rule of config.disallowedTools || []) {
+    if (matchesRule(rule, toolName, toolInput)) return "deny";
+  }
+  for (const rule of config.allowedTools || []) {
+    if (matchesRule(rule, toolName, toolInput)) return "allow";
+  }
+  return null;
+}
+
+// --------------------------------------------------------------------------
 // Simple shared-password auth. A valid login issues a random token stored in
 // memory and set as an HttpOnly cookie; tokens are lost on restart (re-login).
 // --------------------------------------------------------------------------
@@ -307,6 +356,13 @@ app.post("/api/permission", (req, res) => {
   const { sessionId, toolName, toolInput, toolUseId } = req.body || {};
   const session = sessions.get(sessionId);
   dlog("permission request", { sessionId, toolName });
+
+  // Pre-approved / pre-denied tools skip the dialog entirely.
+  const auto = autoDecision(toolName, toolInput);
+  if (auto) {
+    dlog("permission auto-decided from config", { toolName, decision: auto });
+    return res.json({ decision: auto });
+  }
 
   // If approval is disabled or no SSE is connected, auto-allow (fallback).
   if (!config.requireApproval || !session || !session.sse) {
