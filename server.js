@@ -180,8 +180,11 @@ function isAuthed(req) {
   return c.cw_auth && authTokens.has(c.cw_auth);
 }
 
-// Gate everything except the login page and the login endpoint.
-const PUBLIC_PATHS = new Set(["/login.html", "/api/login"]);
+// Gate everything except the login page, the login endpoint, and the
+// permission callback. /api/permission is called by permission-hook.js (a local
+// claude subprocess on 127.0.0.1, not the browser), so it carries no auth cookie
+// and must bypass the gate — otherwise every tool is auto-denied.
+const PUBLIC_PATHS = new Set(["/login.html", "/api/login", "/api/permission"]);
 app.use((req, res, next) => {
   if (PUBLIC_PATHS.has(req.path) || isAuthed(req)) return next();
   if (req.path.startsWith("/api/")) {

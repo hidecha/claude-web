@@ -27,10 +27,10 @@
 <body>
   <form class="card" id="form">
     <h1>Claude Code Chat</h1>
-    <p>サインインしてください / Please sign in</p>
-    <label for="pw">パスワード / Password</label>
+    <p>Please sign in</p>
+    <label for="pw">Password</label>
     <input id="pw" type="password" autocomplete="current-password" autofocus />
-    <button type="submit">ログイン / Sign in</button>
+    <button type="submit">Sign in</button>
     <div class="err" id="err"></div>
   </form>
   <script>
@@ -48,7 +48,7 @@
       if (r.ok) {
         location.href = "/";
       } else {
-        err.textContent = "パスワードが正しくありません / Invalid password";
+        err.textContent = "Invalid password";
         pw.select();
       }
     });

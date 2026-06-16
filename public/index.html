@@ -115,21 +115,21 @@
     <h1>Claude Code Chat</h1>
     <span class="meta" id="meta"></span>
     <span class="spacer"></span>
-    <button id="settingsBtn" title="Settings">⚙ 設定</button>
-    <button id="newBtn">＋ 新しいセッション</button>
-    <button id="logoutBtn">ログアウト</button>
+    <button id="settingsBtn" title="Settings">⚙ Settings</button>
+    <button id="newBtn">＋ New session</button>
+    <button id="logoutBtn">Log out</button>
   </header>
   <div class="layout">
     <aside id="sidebar">
-      <div class="head">セッション履歴 / History</div>
+      <div class="head">Session history</div>
       <div id="sessList"></div>
     </aside>
     <div class="main">
       <div id="presets"></div>
       <div id="log"></div>
       <form id="form">
-        <textarea id="input" rows="3" placeholder="プロンプトを入力（Shift+Enterで送信 / Enterで改行）"></textarea>
-        <button id="send" type="submit">送信</button>
+        <textarea id="input" rows="3" placeholder="Enter a prompt (Shift+Enter to send / Enter for a new line)"></textarea>
+        <button id="send" type="submit">Send</button>
       </form>
     </div>
   </div>
@@ -137,25 +137,25 @@
   <!-- Settings modal -->
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal">
-      <h2>設定 / Settings</h2>
-      <label for="setModel">言語モデル / Model</label>
+      <h2>Settings</h2>
+      <label for="setModel">Model</label>
       <input id="setModel" placeholder="opus / sonnet / haiku / claude-opus-4-8 ..." />
-      <div class="hint">空欄で既定のモデルを使用します。</div>
+      <div class="hint">Leave empty to use the default model.</div>
 
-      <label for="setKeyId">AWS アクセスキー ID / Access Key ID</label>
+      <label for="setKeyId">AWS Access Key ID</label>
       <input id="setKeyId" autocomplete="off" />
 
-      <label for="setSecret">AWS シークレットアクセスキー / Secret Access Key</label>
-      <input id="setSecret" type="password" autocomplete="off" placeholder="（変更する場合のみ入力）" />
+      <label for="setSecret">AWS Secret Access Key</label>
+      <input id="setSecret" type="password" autocomplete="off" placeholder="(enter only to change)" />
       <div class="hint" id="secretHint"></div>
 
-      <label for="setRegion">デフォルトリージョン / Default Region</label>
+      <label for="setRegion">Default Region</label>
       <input id="setRegion" placeholder="ap-northeast-1" />
 
       <div class="actions">
         <span class="saved" id="savedMsg"></span>
-        <button class="cancel" id="settingsCancel" type="button">キャンセル</button>
-        <button class="save" id="settingsSave" type="button">保存</button>
+        <button class="cancel" id="settingsCancel" type="button">Cancel</button>
+        <button class="save" id="settingsSave" type="button">Save</button>
       </div>
     </div>
   </div>
@@ -300,11 +300,11 @@
       card.className = "perm";
       const input = JSON.stringify(ev.toolInput, null, 2);
       card.innerHTML = `
-        <div class="title">🔐 ツール実行の承認 / Approve tool: <b></b></div>
+        <div class="title">🔐 Approve tool: <b></b></div>
         <pre></pre>
         <div class="btns">
-          <button class="approve">承認 / Approve</button>
-          <button class="reject">拒否 / Reject</button>
+          <button class="approve">Approve</button>
+          <button class="reject">Reject</button>
         </div>`;
       card.querySelector("b").textContent = ev.toolName;
       card.querySelector("pre").textContent = input;
@@ -312,7 +312,7 @@
       const respond = async (decision) => {
         card.classList.add("resolved");
         card.querySelector(".title").innerHTML =
-          (decision === "allow" ? "✅ 承認済み / Approved: " : "⛔ 拒否 / Rejected: ") + "<b></b>";
+          (decision === "allow" ? "✅ Approved: " : "⛔ Rejected: ") + "<b></b>";
         card.querySelector("b").textContent = ev.toolName;
         await fetch("/api/permission/respond", {
           method: "POST",
@@ -405,8 +405,8 @@
       document.getElementById("setSecret").value = "";
       document.getElementById("setRegion").value = s.awsRegion || "";
       document.getElementById("secretHint").textContent = s.awsSecretAccessKeySet
-        ? "保存済み。変更しない場合は空欄のままにしてください。"
-        : "未設定です。";
+        ? "Saved. Leave blank to keep the current value."
+        : "Not set.";
       document.getElementById("savedMsg").textContent = "";
       settingsModal.classList.add("open");
     }
@@ -423,7 +423,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      document.getElementById("savedMsg").textContent = "保存しました";
+      document.getElementById("savedMsg").textContent = "Saved";
       await loadConfig();
       setTimeout(closeSettings, 700);
     }
