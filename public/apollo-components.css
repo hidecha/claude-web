@@ -1,0 +1,87 @@
+/*
+ * UiPath Apollo — common component patterns.
+ * Load AFTER apollo-theme.css. All values reference theme tokens so
+ * components respond to .light / .dark automatically.
+ */
+
+/* ===== Buttons ===== */
+.ap-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-xs);
+  height: 32px; padding: 0 var(--spacing-base);
+  font-family: var(--font-normal); font-size: 14px; font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-m); border: 1px solid transparent;
+  cursor: pointer; user-select: none; transition: background-color .15s, border-color .15s;
+}
+.ap-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Primary — solid blue, white text */
+.ap-btn--primary { background: var(--color-primary); color: var(--color-foreground-inverse); }
+.ap-btn--primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.ap-btn--primary:active:not(:disabled) { background: var(--color-primary-pressed); }
+
+/* Secondary — outlined */
+.ap-btn--secondary { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+.ap-btn--secondary:hover:not(:disabled) { background: var(--color-background-selected); }
+
+/* Tertiary / ghost — text only */
+.ap-btn--tertiary { background: transparent; color: var(--color-primary); }
+.ap-btn--tertiary:hover:not(:disabled) { background: var(--color-background-hover); }
+
+/* ===== Cards ===== */
+.ap-card {
+  background: var(--color-background-raised);
+  border-radius: var(--border-radius-l);
+  box-shadow: var(--shadow-card-elevation);
+  padding: var(--spacing-l);
+}
+
+/* ===== Inputs ===== */
+.ap-input, .ap-select {
+  height: 32px; width: 100%; box-sizing: border-box;
+  padding: 0 var(--spacing-s);
+  font-family: var(--font-normal); font-size: 14px; color: var(--color-foreground);
+  background: var(--color-background);
+  border: 1px solid var(--color-border); border-radius: var(--border-radius-m);
+  transition: border-color .15s, box-shadow .15s;
+}
+.ap-input:focus, .ap-select:focus {
+  outline: none; border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+.ap-input::placeholder { color: var(--color-foreground-disable); }
+.ap-label { display: block; font-size: 12px; font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground-de-emp); margin-bottom: var(--spacing-micro); }
+
+/* ===== Chips / badges ===== */
+.ap-chip {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 var(--spacing-xs);
+  font-size: 12px; font-weight: var(--font-weight-semibold); border-radius: 999px;
+  background: var(--color-background-hover); color: var(--color-foreground);
+}
+.ap-chip--success { background: #eeffe5; color: #038108; }
+.ap-chip--error   { background: #fff0f1; color: #a6040a; }
+.ap-chip--warning { background: #fff3db; color: #9e6100; }
+.ap-chip--info    { background: #e9f1fa; color: #1665b3; }
+
+/* ===== App shell: top bar + left rail + content ===== */
+.ap-shell { display: grid; grid-template-columns: 48px 1fr; grid-template-rows: 48px 1fr;
+  grid-template-areas: "topbar topbar" "rail main"; height: 100vh; }
+.ap-topbar {
+  grid-area: topbar; display: flex; align-items: center; gap: var(--spacing-base);
+  padding: 0 var(--spacing-base); background: var(--color-background-raised);
+  border-bottom: 1px solid var(--color-border-de-emp);
+}
+.ap-topbar__logo { color: var(--color-logo); font-family: var(--font-title); font-weight: 700; }
+.ap-rail {
+  grid-area: rail; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-xs);
+  padding-top: var(--spacing-s); background: var(--color-background-raised);
+  border-right: 1px solid var(--color-border-de-emp);
+}
+.ap-rail__item {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--border-radius-m); color: var(--color-foreground-de-emp); cursor: pointer;
+}
+.ap-rail__item:hover { background: var(--color-background-hover); }
+.ap-rail__item--active { color: var(--color-primary); background: var(--color-background-selected);
+  box-shadow: inset 3px 0 0 var(--color-primary); }
+.ap-main { grid-area: main; overflow: auto; padding: var(--spacing-l); background: var(--color-background-secondary); }

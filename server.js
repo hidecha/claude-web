@@ -233,7 +233,11 @@ function isAuthed(req) {
 // permission callback. /api/permission is called by permission-hook.js (a local
 // claude subprocess on 127.0.0.1, not the browser), so it carries no auth cookie
 // and must bypass the gate — otherwise every tool is auto-denied.
-const PUBLIC_PATHS = new Set(["/login.html", "/api/login", "/api/permission"]);
+const PUBLIC_PATHS = new Set([
+  "/login.html", "/api/login", "/api/permission",
+  // Assets used by the login page must load before authentication.
+  "/apollo-theme.css", "/apollo-components.css", "/theme.js",
+]);
 app.use((req, res, next) => {
   if (PUBLIC_PATHS.has(req.path) || isAuthed(req)) return next();
   if (req.path.startsWith("/api/")) {

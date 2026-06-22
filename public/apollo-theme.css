@@ -1,0 +1,156 @@
+/*
+ * UiPath Apollo Design System — drop-in theme stylesheet
+ * Derived from @uipath/apollo-core design tokens.
+ *
+ * Usage:
+ *   1. Link the fonts (see comment block below).
+ *   2. <link rel="stylesheet" href="apollo-theme.css">
+ *   3. Put class="apollo light" (or "apollo dark") on <body>.
+ *
+ * The :root block holds the raw palette + scales. The .light / .dark
+ * blocks map raw values to the SEMANTIC tokens you should actually use
+ * in components (var(--color-primary), var(--color-foreground), etc.).
+ */
+
+/* Fonts — Apollo uses Poppins for titles, Noto Sans for body, Inconsolata for code.
+   Add this to your <head>:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;600;700&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+*/
+
+:root {
+  /* ---- Brand palette (raw) ---- */
+  --color-brand-primary: #fa4616;      /* UiPath orange — marketing/logo accent */
+  --color-brand-secondary: #0067df;    /* product blue — primary UI action color */
+  --color-orange-500: #fa4616;
+  --color-blue-500: #0067df;
+  --color-blue-600: #0056ba;
+  --color-blue-700: #00489d;
+
+  /* ---- Ink (cool neutral) scale — backgrounds, text, borders ---- */
+  --color-ink-100: #f8f9fa;
+  --color-ink-150: #f4f5f7;
+  --color-ink-200: #e9f0f3;
+  --color-ink-300: #cfd8dd;
+  --color-ink-400: #a4b1b8;
+  --color-ink-450: #8a97a0;
+  --color-ink-500: #6b7882;
+  --color-ink-550: #526069;
+  --color-ink-600: #374652;
+  --color-ink-650: #273139;
+  --color-ink-700: #182027;
+  --color-ink-750: #0e1419;
+
+  /* ---- Status colors ---- */
+  --color-success-500: #6eb84a;
+  --color-success-700: #038108;
+  --color-error-500: #cc3d45;
+  --color-error-700: #a6040a;
+  --color-warning-500: #ffb40e;
+  --color-info-500: #1976d2;
+
+  /* ---- Typography ---- */
+  --font-title: poppins, "Noto Sans", -apple-system, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-normal: "Noto Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: inconsolata, monospace;
+  --font-weight-light: 300;
+  --font-weight-default: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ---- Spacing (4px base grid) ---- */
+  --spacing-micro: 4px;
+  --spacing-xs: 8px;
+  --spacing-s: 12px;
+  --spacing-base: 16px;
+  --spacing-m: 20px;
+  --spacing-l: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 40px;
+
+  /* ---- Border radius ---- */
+  --border-radius-none: 0px;
+  --border-radius-s: 3px;
+  --border-radius-m: 4px;   /* default for buttons, inputs */
+  --border-radius-l: 8px;   /* cards, dialogs */
+
+  /* ---- Elevation ---- */
+  --shadow-card-elevation: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-menu-elevation: 0px 8px 10px rgba(0,0,0,.14), 0px 3px 14px rgba(0,0,0,.12), 0px 5px 5px rgba(0,0,0,.14);
+  --shadow-dialog-elevation: 0px 5px 10px rgba(0,0,0,.2), 0px 1px 5px rgba(0,0,0,.12), 0px 8px 10px rgba(0,0,0,.14);
+}
+
+/* ===== Light theme (default) ===== */
+.light, body.light, .apollo-design.light {
+  --color-background: #ffffff;
+  --color-background-secondary: #f4f5f7;   /* page/app chrome */
+  --color-background-raised: #ffffff;       /* cards, menus */
+  --color-background-hover: #52606914;      /* 8% ink overlay */
+  --color-background-selected: #e9f1fa;
+  --color-foreground: #273139;              /* default text */
+  --color-foreground-emp: #182027;          /* emphasized headings */
+  --color-foreground-de-emp: #526069;       /* secondary text */
+  --color-foreground-disable: #8a97a0;
+  --color-foreground-inverse: #f8f9fa;      /* text on dark/accent */
+  --color-foreground-link: #0067df;
+  --color-border: #a4b1b8;
+  --color-border-de-emp: #cfd8dd;
+  --color-primary: #0067df;
+  --color-primary-hover: #0056ba;
+  --color-primary-pressed: #00489d;
+  --color-logo: #fa4616;
+  --color-error: #a6040a;
+  --color-success: #038108;
+  --color-warning: #9e6100;
+  --color-info: #1665b3;
+  color-scheme: light;
+}
+
+/* ===== Dark theme ===== */
+.dark, body.dark, .apollo-design.dark {
+  --color-background: #182027;
+  --color-background-secondary: #273139;
+  --color-background-raised: #273139;
+  --color-background-hover: #374652;
+  --color-background-selected: #374652;
+  --color-foreground: #f4f5f7;
+  --color-foreground-emp: #f8f9fa;
+  --color-foreground-de-emp: #cfd8dd;
+  --color-foreground-disable: #a4b1b8;
+  --color-foreground-inverse: #182027;
+  --color-foreground-link: #66adff;
+  --color-border: #8a97a0;
+  --color-border-de-emp: #526069;
+  --color-primary: #66adff;
+  --color-primary-hover: #87bfff;
+  --color-primary-pressed: #badaff;
+  --color-logo: #ffffff;
+  --color-error: #ff8484;
+  --color-success: #74c94b;
+  --color-warning: #ffe19e;
+  --color-info: #42a1ff;
+  color-scheme: dark;
+}
+
+/* ===== Base element styling ===== */
+body {
+  margin: 0;
+  font-family: var(--font-normal);
+  font-size: 14px;          /* Apollo default body = M / 14px */
+  line-height: 20px;
+  font-weight: var(--font-weight-default);
+  color: var(--color-foreground);
+  background: var(--color-background-secondary);
+}
+
+h1, h2, h3, h4 { font-family: var(--font-normal); color: var(--color-foreground-emp); margin: 0 0 var(--spacing-base); }
+h1 { font-size: 36px; line-height: 44px; font-weight: 300; }
+h2 { font-size: 32px; line-height: 40px; font-weight: 300; }
+h3 { font-size: 24px; line-height: 32px; font-weight: 300; }
+h4 { font-size: 20px; line-height: 24px; font-weight: 300; }
+
+a { color: var(--color-foreground-link); text-decoration: none; font-weight: var(--font-weight-semibold); }
+a:hover { text-decoration: underline; }
+
+code, pre { font-family: var(--font-mono); }
