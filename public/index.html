@@ -4,110 +4,129 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Claude Code Chat</title>
-  <!-- Japanese-friendly web font -->
+  <!-- Apollo fonts (Poppins / Noto Sans / Inconsolata) + Japanese fallback -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Apollo design system -->
+  <link rel="stylesheet" href="/apollo-theme.css" />
+  <link rel="stylesheet" href="/apollo-components.css" />
+  <script>
+    // Apply the saved theme before paint to avoid a flash.
+    (function () {
+      var t = localStorage.getItem("apollo-theme") || "light";
+      document.documentElement.classList.add("apollo-design", t);
+    })();
+  </script>
   <!-- Markdown rendering: marked + DOMPurify (CDN). Falls back to plain text when offline. -->
   <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <style>
-    :root { --bg:#1e1e1e; --panel:#252526; --border:#333; --user:#2b5278; --tool:#3a3a2a; --accent:#d97757; }
     * { box-sizing: border-box; }
     body { margin:0; height:100vh; display:flex; flex-direction:column;
-           font-family:"Noto Sans JP",-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:#eee; }
-    header { padding:10px 16px; background:var(--panel); border-bottom:1px solid var(--border);
-             display:flex; align-items:center; gap:12px; }
-    header h1 { font-size:15px; margin:0; font-weight:600; }
-    header .meta { font-size:12px; color:#999; }
+           background:var(--color-background-secondary); color:var(--color-foreground); }
+    header { padding:0 var(--spacing-base); height:48px; background:var(--color-background-raised);
+             border-bottom:1px solid var(--color-border-de-emp);
+             display:flex; align-items:center; gap:var(--spacing-s); }
+    header h1 { font-family:var(--font-title); font-size:15px; margin:0; font-weight:var(--font-weight-semibold);
+                color:var(--color-foreground-emp); }
+    header .meta { font-size:12px; color:var(--color-foreground-de-emp); }
     header .spacer { margin-left:auto; }
-    header button { background:var(--border); color:#eee; border:none;
-                    padding:6px 12px; border-radius:6px; cursor:pointer; font-family:inherit; }
-    header button:hover { background:#444; }
+    /* Header buttons reuse the Apollo tertiary button via .ap-btn--tertiary in markup. */
+    .icon-toggle { width:32px; height:32px; padding:0; font-size:16px; line-height:1; }
     .layout { flex:1; display:flex; min-height:0; }
     /* Session history sidebar */
-    #sidebar { width:240px; background:var(--panel); border-right:1px solid var(--border);
+    #sidebar { width:240px; background:var(--color-background-raised);
+               border-right:1px solid var(--color-border-de-emp);
                overflow-y:auto; flex-shrink:0; display:flex; flex-direction:column; }
-    #sidebar .head { padding:10px 14px; font-size:12px; color:#999; text-transform:uppercase;
-                     letter-spacing:.05em; border-bottom:1px solid var(--border); }
-    .sess { padding:10px 14px; border-bottom:1px solid #2a2a2a; cursor:pointer; font-size:13px; }
-    .sess:hover { background:#2e2e2e; }
-    .sess.active { background:#33312e; border-left:3px solid var(--accent); }
+    #sidebar .head { padding:var(--spacing-s) var(--spacing-base); font-size:12px;
+                     color:var(--color-foreground-de-emp); text-transform:uppercase;
+                     letter-spacing:.05em; border-bottom:1px solid var(--color-border-de-emp); }
+    .sess { padding:var(--spacing-s) var(--spacing-base); border-bottom:1px solid var(--color-border-de-emp);
+            cursor:pointer; font-size:13px; }
+    .sess:hover { background:var(--color-background-hover); }
+    .sess.active { background:var(--color-background-selected);
+                   box-shadow:inset 3px 0 0 var(--color-primary); }
     .sess .title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .sess .time { font-size:11px; color:#888; margin-top:2px; }
+    .sess .time { font-size:11px; color:var(--color-foreground-de-emp); margin-top:2px; }
     .main { flex:1; display:flex; flex-direction:column; min-width:0; }
-    #presets { padding:8px 16px; display:flex; gap:8px; flex-wrap:wrap;
-               background:var(--panel); border-bottom:1px solid var(--border); }
-    #presets button { background:#333; color:#ddd; border:1px solid #444; border-radius:14px;
-                      padding:4px 12px; font-size:12px; cursor:pointer; font-family:inherit; }
-    #presets button:hover { background:#444; }
-    #log { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-    .msg { max-width:80%; padding:10px 14px; border-radius:10px;
+    #presets { padding:var(--spacing-xs) var(--spacing-base); display:flex; gap:var(--spacing-xs);
+               flex-wrap:wrap; background:var(--color-background-raised);
+               border-bottom:1px solid var(--color-border-de-emp); }
+    #presets button { background:transparent; color:var(--color-primary);
+                      border:1px solid var(--color-primary); border-radius:999px;
+                      padding:4px 12px; font-size:12px; font-weight:var(--font-weight-semibold);
+                      cursor:pointer; font-family:inherit; transition:background-color .15s; }
+    #presets button:hover { background:var(--color-background-selected); }
+    #log { flex:1; overflow-y:auto; padding:var(--spacing-base); display:flex;
+           flex-direction:column; gap:var(--spacing-s); }
+    .msg { max-width:80%; padding:10px 14px; border-radius:var(--border-radius-l);
            word-break:break-word; line-height:1.5; font-size:14px; }
-    .msg.user { align-self:flex-end; background:var(--user); white-space:pre-wrap; }
-    .msg.assistant { align-self:flex-start; background:var(--panel); border:1px solid var(--border); }
-    .msg.tool { align-self:flex-start; background:var(--tool); font-family:ui-monospace,monospace;
-                font-size:12px; color:#cc9; white-space:pre-wrap; }
-    .msg.error { align-self:flex-start; background:#5a2b2b; white-space:pre-wrap; }
-    .msg.result { align-self:center; background:transparent; color:#888; font-size:12px; }
+    .msg.user { align-self:flex-end; background:var(--color-primary);
+                color:var(--color-foreground-inverse); white-space:pre-wrap; }
+    .msg.assistant { align-self:flex-start; background:var(--color-background-raised);
+                     border:1px solid var(--color-border-de-emp); }
+    .msg.tool { align-self:flex-start; background:var(--color-background-hover);
+                font-family:var(--font-mono); font-size:12px;
+                color:var(--color-foreground-de-emp); white-space:pre-wrap; }
+    .msg.error { align-self:flex-start; background:var(--color-background-raised);
+                 border:1px solid var(--color-error); color:var(--color-error); white-space:pre-wrap; }
+    .msg.result { align-self:center; background:transparent; color:var(--color-foreground-de-emp); font-size:12px; }
     /* Assistant message wrapper + action toolbar (copy / download) */
     .assistant-wrap { align-self:flex-start; max-width:80%; display:flex; flex-direction:column; gap:4px; }
     .assistant-wrap .msg.assistant { max-width:100%; }
     .msg-actions { display:flex; gap:4px; opacity:0; transition:opacity .15s; padding-left:2px; }
     .assistant-wrap:hover .msg-actions { opacity:1; }
-    .icon-btn { background:transparent; border:1px solid var(--border); border-radius:6px;
-                color:#aaa; width:28px; height:28px; display:inline-flex; align-items:center;
+    .icon-btn { background:transparent; border:1px solid var(--color-border-de-emp);
+                border-radius:var(--border-radius-m); color:var(--color-foreground-de-emp);
+                width:28px; height:28px; display:inline-flex; align-items:center;
                 justify-content:center; cursor:pointer; padding:0; }
-    .icon-btn:hover { background:#333; color:#eee; }
+    .icon-btn:hover { background:var(--color-background-hover); color:var(--color-foreground); }
     .icon-btn svg { width:15px; height:15px; }
-    .icon-btn.copied { color:#4caf50; border-color:#4caf50; }
+    .icon-btn.copied { color:var(--color-success); border-color:var(--color-success); }
     /* Approval card */
-    .perm { align-self:flex-start; max-width:80%; background:#2d2a3a; border:1px solid #4a4470;
-            border-radius:10px; padding:12px 14px; font-size:13px; }
-    .perm .title { font-weight:600; margin-bottom:6px; }
-    .perm pre { background:#1a1a1a; border-radius:6px; padding:8px; overflow-x:auto;
-                font-size:12px; margin:6px 0; }
+    .perm { align-self:flex-start; max-width:80%; background:var(--color-background-raised);
+            border:1px solid var(--color-border); border-radius:var(--border-radius-l);
+            padding:12px 14px; font-size:13px; box-shadow:var(--shadow-card-elevation); }
+    .perm .title { font-weight:var(--font-weight-semibold); margin-bottom:6px; }
+    .perm pre { background:var(--color-background-secondary); border-radius:var(--border-radius-m);
+                padding:8px; overflow-x:auto; font-size:12px; margin:6px 0; }
     .perm .btns { display:flex; gap:8px; margin-top:8px; }
-    .perm button { border:none; border-radius:6px; padding:6px 16px; font-weight:600; cursor:pointer; font-family:inherit; }
-    .perm .approve { background:#2e7d32; color:#fff; }
-    .perm .reject { background:#b23b3b; color:#fff; }
     .perm.resolved { opacity:.6; }
     .perm.resolved .btns { display:none; }
     /* Markdown elements */
-    .msg.assistant pre { background:#1a1a1a; border:1px solid var(--border); border-radius:6px;
+    .msg.assistant pre { background:var(--color-background-secondary);
+                         border:1px solid var(--color-border-de-emp); border-radius:var(--border-radius-m);
                          padding:10px; overflow-x:auto; }
-    .msg.assistant code { background:#1a1a1a; padding:1px 5px; border-radius:4px;
-                          font-family:ui-monospace,monospace; font-size:.9em; }
+    .msg.assistant code { background:var(--color-background-secondary); padding:1px 5px;
+                          border-radius:var(--border-radius-s); font-family:var(--font-mono); font-size:.9em; }
     .msg.assistant pre code { background:none; padding:0; }
     .msg.assistant table { border-collapse:collapse; }
-    .msg.assistant th, .msg.assistant td { border:1px solid var(--border); padding:4px 8px; }
-    .msg.assistant blockquote { border-left:3px solid var(--accent); margin:6px 0; padding-left:10px; color:#bbb; }
+    .msg.assistant th, .msg.assistant td { border:1px solid var(--color-border-de-emp); padding:4px 8px; }
+    .msg.assistant blockquote { border-left:3px solid var(--color-primary); margin:6px 0;
+                                padding-left:10px; color:var(--color-foreground-de-emp); }
     .msg.assistant h1,.msg.assistant h2,.msg.assistant h3 { margin:.4em 0; }
     .msg.assistant p { margin:.4em 0; }
-    .msg.assistant a { color:#6cb6ff; }
-    form { display:flex; gap:8px; padding:12px 16px; background:var(--panel); border-top:1px solid var(--border); }
-    #input { flex:1; resize:none; background:#1a1a1a; color:#eee; border:1px solid var(--border);
-             border-radius:8px; padding:10px; font-size:14px; font-family:inherit; }
-    #send { background:var(--accent); color:#fff; border:none; border-radius:8px;
-            padding:0 20px; font-weight:600; cursor:pointer; font-family:inherit; }
-    #send:disabled { opacity:.5; cursor:default; }
+    .msg.assistant a { color:var(--color-foreground-link); }
+    form { display:flex; gap:var(--spacing-xs); padding:var(--spacing-s) var(--spacing-base);
+           background:var(--color-background-raised); border-top:1px solid var(--color-border-de-emp); }
+    #input { flex:1; resize:none; background:var(--color-background); color:var(--color-foreground);
+             border:1px solid var(--color-border); border-radius:var(--border-radius-m);
+             padding:10px; font-size:14px; font-family:inherit; transition:border-color .15s, box-shadow .15s; }
+    #input:focus { outline:none; border-color:var(--color-primary); box-shadow:0 0 0 1px var(--color-primary); }
+    #send { padding:0 20px; }
     /* Settings modal */
     .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none;
                       align-items:center; justify-content:center; z-index:10; }
     .modal-backdrop.open { display:flex; }
-    .modal { background:var(--panel); border:1px solid var(--border); border-radius:12px;
-             padding:24px; width:420px; max-width:90vw; }
-    .modal h2 { margin:0 0 16px; font-size:16px; }
-    .modal label { display:block; font-size:13px; margin:12px 0 6px; color:#ccc; }
-    .modal input { width:100%; background:#1a1a1a; color:#eee; border:1px solid var(--border);
-                   border-radius:8px; padding:9px; font-size:14px; font-family:inherit; }
-    .modal .hint { font-size:11px; color:#888; margin-top:4px; }
-    .modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
-    .modal .actions button { border:none; border-radius:8px; padding:8px 16px; font-weight:600;
-                             cursor:pointer; font-family:inherit; }
-    .modal .save { background:var(--accent); color:#fff; }
-    .modal .cancel { background:var(--border); color:#eee; }
-    .modal .saved { color:#4caf50; font-size:13px; align-self:center; margin-right:auto; }
+    .modal { background:var(--color-background-raised); border-radius:var(--border-radius-l);
+             box-shadow:var(--shadow-dialog-elevation); padding:24px; width:420px; max-width:90vw; }
+    .modal h2 { margin:0 0 16px; font-size:20px; font-weight:var(--font-weight-light);
+                color:var(--color-foreground-emp); }
+    .modal .ap-label { margin-top:12px; }
+    .modal .hint { font-size:11px; color:var(--color-foreground-de-emp); margin-top:4px; }
+    .modal .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; align-items:center; }
+    .modal .saved { color:var(--color-success); font-size:13px; margin-right:auto; }
   </style>
 </head>
 <body>
@@ -115,9 +134,10 @@
     <h1>Claude Code Chat</h1>
     <span class="meta" id="meta"></span>
     <span class="spacer"></span>
-    <button id="settingsBtn" title="Settings">⚙ Settings</button>
-    <button id="newBtn">＋ New session</button>
-    <button id="logoutBtn">Log out</button>
+    <button class="ap-btn ap-btn--tertiary icon-toggle" id="themeToggle" data-theme-toggle title="Toggle light/dark"></button>
+    <button class="ap-btn ap-btn--tertiary" id="settingsBtn" title="Settings">⚙ Settings</button>
+    <button class="ap-btn ap-btn--secondary" id="newBtn">＋ New session</button>
+    <button class="ap-btn ap-btn--tertiary" id="logoutBtn">Log out</button>
   </header>
   <div class="layout">
     <aside id="sidebar">
@@ -129,7 +149,7 @@
       <div id="log"></div>
       <form id="form">
         <textarea id="input" rows="3" placeholder="Enter a prompt (Shift+Enter to send / Enter for a new line)"></textarea>
-        <button id="send" type="submit">Send</button>
+        <button class="ap-btn ap-btn--primary" id="send" type="submit">Send</button>
       </form>
     </div>
   </div>
@@ -138,28 +158,29 @@
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal">
       <h2>Settings</h2>
-      <label for="setModel">Model</label>
-      <input id="setModel" placeholder="opus / sonnet / haiku / claude-opus-4-8 ..." />
+      <label class="ap-label" for="setModel">Model</label>
+      <input class="ap-input" id="setModel" placeholder="opus / sonnet / haiku / claude-opus-4-8 ..." />
       <div class="hint">Leave empty to use the default model.</div>
 
-      <label for="setKeyId">AWS Access Key ID</label>
-      <input id="setKeyId" autocomplete="off" />
+      <label class="ap-label" for="setKeyId">AWS Access Key ID</label>
+      <input class="ap-input" id="setKeyId" autocomplete="off" />
 
-      <label for="setSecret">AWS Secret Access Key</label>
-      <input id="setSecret" type="password" autocomplete="off" placeholder="(enter only to change)" />
+      <label class="ap-label" for="setSecret">AWS Secret Access Key</label>
+      <input class="ap-input" id="setSecret" type="password" autocomplete="off" placeholder="(enter only to change)" />
       <div class="hint" id="secretHint"></div>
 
-      <label for="setRegion">Default Region</label>
-      <input id="setRegion" placeholder="ap-northeast-1" />
+      <label class="ap-label" for="setRegion">Default Region</label>
+      <input class="ap-input" id="setRegion" placeholder="ap-northeast-1" />
 
       <div class="actions">
         <span class="saved" id="savedMsg"></span>
-        <button class="cancel" id="settingsCancel" type="button">Cancel</button>
-        <button class="save" id="settingsSave" type="button">Save</button>
+        <button class="ap-btn ap-btn--tertiary" id="settingsCancel" type="button">Cancel</button>
+        <button class="ap-btn ap-btn--primary" id="settingsSave" type="button">Save</button>
       </div>
     </div>
   </div>
 
+  <script src="/theme.js"></script>
   <script>
     const logEl = document.getElementById("log");
     const inputEl = document.getElementById("input");
@@ -303,8 +324,8 @@
         <div class="title">🔐 Approve tool: <b></b></div>
         <pre></pre>
         <div class="btns">
-          <button class="approve">Approve</button>
-          <button class="reject">Reject</button>
+          <button class="ap-btn ap-btn--primary approve">Approve</button>
+          <button class="ap-btn ap-btn--secondary reject">Reject</button>
         </div>`;
       card.querySelector("b").textContent = ev.toolName;
       card.querySelector("pre").textContent = input;
